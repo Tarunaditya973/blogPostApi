@@ -50,3 +50,24 @@ module.exports.login = async (req, res, next) => {
     next(err);
   }
 };
+
+module.exports.followUser = async (req, res, next) => {
+  const { userId } = req.body;
+  const { followingId } = req.params;
+  try {
+    const user = await User.findById(userId);
+    const isAlreadyFollowing = user.following.find((id) =>
+      id.equals(followingId)
+    );
+
+    if (isAlreadyFollowing) {
+      return res.status(400).json({ error: "User is already being followed" });
+    }
+    user.following.push(followingId);
+    const updatedUser = await user.save();
+    res.json({ msg: "Follwed User successfully" });
+  } catch (err) {
+    console.log("Error following ", err);
+    next(err);
+  }
+};
