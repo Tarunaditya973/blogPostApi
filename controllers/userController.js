@@ -1,6 +1,6 @@
 const User = require("../models/users.model");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { createSecretToken } = require("./tokenGenerator");
 
 module.exports.SignUp = async (req, res, next) => {
   const { username, email, password, firstName, lastName } = req.body;
@@ -25,6 +25,8 @@ module.exports.SignUp = async (req, res, next) => {
       lastName,
     });
     const savedUser = await user.save();
+    const token = createSecretToken(savedUser._id);
+    res.cookie("token", token, { expiresIn: "1h" });
     res.status(201).json(savedUser);
   } catch (err) {
     console.error(err); // Log the error for debugging
@@ -44,6 +46,8 @@ module.exports.login = async (req, res, next) => {
         return res.status(401).json({ message: "Invalid Password!" });
       }
       // Create token
+      const token = createSecretToken(user._id);
+      res.cookie("token", token, { expiresIn: "1h" });
       res.status(200).json({ message: "User Logged in succesfully" });
     }
   } catch (err) {
@@ -71,3 +75,7 @@ module.exports.followUser = async (req, res, next) => {
     next(err);
   }
 };
+
+module.exports.getFollowers = async (req, res, next) => {};
+
+module.exports.getFollowing = async (req, res, next) => {};
